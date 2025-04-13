@@ -1,5 +1,3 @@
-// src/pages/VaultPage.js
-
 import React, { useState } from "react";
 import VaultDashboard from "../components/VaultDashboard";
 import UserVault from "../components/UserVault";
@@ -13,8 +11,14 @@ const VaultPage = () => {
   return (
     <div>
       <VaultDashboard />
-      <UserVault refreshSignal={refreshKey} />
-      <DepositForm onDepositSuccess={refreshVault} />
+      <div className="flex flex-col lg:flex-row gap-6 justify-center items-center px-6">
+        <div className="w-full lg:w-1/2 flex justify-center">
+          <UserVault refreshSignal={refreshKey} />
+        </div>
+        <div className="w-full lg:w-1/2 flex justify-center">
+          <DepositForm onDepositSuccess={refreshVault} />
+        </div>
+      </div>
     </div>
   );
 };

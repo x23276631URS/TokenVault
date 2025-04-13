@@ -1,5 +1,3 @@
-// src/components/UserVault.js
-
 import React, { useEffect, useState } from "react";
 import { Contract, BrowserProvider, formatEther } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../contract";
@@ -13,8 +11,7 @@ const UserVault = ({ refreshSignal }) => {
   const [countdown, setCountdown] = useState("");
 
   const eurRate = useEthToEur();
-  const ethToEur = (eth) =>
-    eurRate ? (parseFloat(eth) * eurRate).toFixed(2) : null;
+  const ethToEur = (eth) => eurRate ? (parseFloat(eth) * eurRate).toFixed(2) : null;
 
   const loadVault = async (signer) => {
     try {
@@ -27,11 +24,7 @@ const UserVault = ({ refreshSignal }) => {
         unlockTime: unlockTime.toString(),
       });
 
-      if (Number(amount) > 0 && now >= Number(unlockTime)) {
-        setCanWithdraw(true);
-      } else {
-        setCanWithdraw(false);
-      }
+      setCanWithdraw(Number(amount) > 0 && now >= Number(unlockTime));
     } catch (err) {
       console.error("Vault fetch failed:", err);
     }
@@ -39,8 +32,7 @@ const UserVault = ({ refreshSignal }) => {
 
   const formatDate = (timestamp) => {
     if (!timestamp || timestamp === "0") return "N/A";
-    const d = new Date(Number(timestamp) * 1000);
-    return d.toLocaleString();
+    return new Date(Number(timestamp) * 1000).toLocaleString();
   };
 
   const formatCountdown = (secondsLeft) => {
@@ -54,7 +46,6 @@ const UserVault = ({ refreshSignal }) => {
 
   useEffect(() => {
     if (!vaultInfo.unlockTime || vaultInfo.unlockTime === "0") return;
-
     const interval = setInterval(() => {
       const now = Math.floor(Date.now() / 1000);
       const unlock = Number(vaultInfo.unlockTime);
@@ -68,7 +59,6 @@ const UserVault = ({ refreshSignal }) => {
         setCountdown(formatCountdown(secondsLeft));
       }
     }, 1000);
-
     return () => clearInterval(interval);
   }, [vaultInfo.unlockTime]);
 
@@ -78,7 +68,6 @@ const UserVault = ({ refreshSignal }) => {
       const provider = new BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
-
       setWalletAddress(accounts[0]);
       await loadVault(signer);
     } catch (err) {
@@ -95,7 +84,7 @@ const UserVault = ({ refreshSignal }) => {
       };
       refresh();
     }
-  }, [refreshSignal,walletAddress]);
+  }, [refreshSignal, walletAddress]);
 
   const handleWithdraw = async () => {
     try {
@@ -117,43 +106,65 @@ const UserVault = ({ refreshSignal }) => {
   };
 
   return (
-    <div style={{ padding: "2rem", marginTop: "2rem" }}>
-      <h2>👤 My Vault</h2>
+    <div className="bg-white flex items-center justify-center overflow-hidden">
+      <div className="w-96 bg-gradient-to-br from-purple-700 to-pink-500 rounded-2xl shadow-2xl relative">
+        <div className="p-6 flex flex-col h-full justify-between relative z-10">
+          <div>
+            <h2 className="text-3xl font-bold text-white mb-2">My Vault</h2>
+            {walletAddress ? (
+              <div className="text-sm text-gray-200 break-all mb-3">👛 {walletAddress}</div>
+            ) : (
+              <button onClick={connectWallet} className="w-full py-2 bg-white text-purple-700 rounded-lg font-semibold">
+                🔌 Connect Wallet
+              </button>
+            )}
+            {walletAddress && (
+              <>
+                {vaultInfo.amount !== "0.0" ? (
+                  <div className="space-y-4">
+                    <div className="bg-white bg-opacity-20 rounded-lg p-3">
+                      <div className="text-xs text-gray-300 uppercase">Locked ETH</div>
+                      <div className="text-2xl font-bold text-white">
+                        {vaultInfo.amount} ETH
+                        {eurRate && (
+                          <span className="block text-sm text-gray-300 font-normal">
+                            (~€{ethToEur(vaultInfo.amount)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-      {!walletAddress ? (
-        <button onClick={connectWallet}>🔌 Connect Wallet</button>
-      ) : (
-        <>
-          <p>👛 Wallet: {walletAddress}</p>
+                    <div className="bg-white bg-opacity-20 rounded-lg p-3">
+                      <div className="text-xs text-gray-300 uppercase">Unlock Time</div>
+                      <div className="text-lg font-medium text-white">{formatDate(vaultInfo.unlockTime)}</div>
+                      {!canWithdraw && countdown && (
+                        <p className="text-xs text-gray-300 mt-1">⏳ Unlocks In: {countdown}</p>
+                      )}
+                    </div>
 
-          {vaultInfo.amount !== "0.0" ? (
-            <>
-              <p>
-                💰 Locked ETH: {vaultInfo.amount} ETH{" "}
-                {eurRate && (
-                  <span style={{ fontSize: "0.9em", color: "gray" }}>
-                    (~€{ethToEur(vaultInfo.amount)})
-                  </span>
+                    {canWithdraw ? (
+                      <button
+                        onClick={handleWithdraw}
+                        className="w-full py-2 bg-white text-purple-700 rounded-lg font-semibold"
+                      >
+                        💸 Withdraw
+                      </button>
+                    ) : (
+                      <p className="text-center text-sm text-white">🔒 Vault is still locked</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-white mt-4">🚫 No active vault found.</p>
                 )}
-              </p>
-              <p>📆 Unlock Time: {formatDate(vaultInfo.unlockTime)}</p>
 
-              {canWithdraw ? (
-                <button onClick={handleWithdraw}>💸 Withdraw</button>
-              ) : (
-                <>
-                  <p>⏳ Unlocks In: {countdown}</p>
-                  <p>🔒 Vault is still locked</p>
-                </>
-              )}
-            </>
-          ) : (
-            <p>🚫 You have no active vault. Use the deposit form to lock ETH.</p>
-          )}
-
-          {status && <p style={{ marginTop: "1rem" }}>{status}</p>}
-        </>
-      )}
+                {status && (
+                  <p className="text-xs text-white text-center mt-4">{status}</p>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
