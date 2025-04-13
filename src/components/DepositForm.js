@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { BrowserProvider, Contract, parseEther } from "ethers";
 import { CONTRACT_ABI, CONTRACT_ADDRESS } from "../contract";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DepositForm = ({ onDepositSuccess }) => {
   const [ethAmount, setEthAmount] = useState("");
@@ -11,7 +13,7 @@ const DepositForm = ({ onDepositSuccess }) => {
 
   const handleDeposit = async (e) => {
     e.preventDefault();
-    if (!window.ethereum) return alert("Please install MetaMask");
+    if (!window.ethereum) return toast.error("Please install MetaMask");
 
     try {
       const provider = new BrowserProvider(window.ethereum);
@@ -19,7 +21,7 @@ const DepositForm = ({ onDepositSuccess }) => {
       const contract = new Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
       if (!ethAmount || isNaN(ethAmount) || Number(ethAmount) <= 0) {
-        return alert("Please enter a valid ETH amount.");
+        return toast.error("Please enter a valid ETH amount.");
       }
 
       const h = parseInt(hours || "0", 10);
@@ -28,7 +30,7 @@ const DepositForm = ({ onDepositSuccess }) => {
 
       const totalSeconds = h * 3600 + m * 60 + s;
       if (totalSeconds <= 0) {
-        return alert("Lock time must be greater than 0 seconds.");
+        return toast.error("Lock time must be greater than 0 seconds.");
       }
 
       const valueInWei = parseEther(ethAmount);
@@ -130,6 +132,7 @@ const DepositForm = ({ onDepositSuccess }) => {
         </form>
         {status && <p className="text-sm text-center text-gray-700 mt-4">{status}</p>}
       </div>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={true} />
     </div>
   );
 };

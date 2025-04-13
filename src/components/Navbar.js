@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function NavItem({ text, route, currentPath }) {
   const navigate = useNavigate();
@@ -35,7 +37,8 @@ function Navbar() {
         console.error("MetaMask connection error:", err);
       }
     } else {
-      alert("Please install MetaMask to use this DApp.");
+      // alert("Please install MetaMask to use this DApp.");
+      toast.error("Please install MetaMask to use this DApp.");
     }
   };
 
@@ -62,13 +65,14 @@ function Navbar() {
       <div className="flex gap-2 items-center">
         <img
           loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/96ed444f12f2297ccd4006841bd1831940e6f23d36396492d16831d2cdf15c29?apiKey=5b7d47d822c447fbbf3f0faf7f51790e&"
-          className="aspect-[1.14] w-[41px]"
+          src="/logo.png"
+          // style={{ width: '220px', height: '50px' }}
           alt="Logo"
+          className="w-[220px] h-[50px]"
         />
-        <div className="uppercase font-extrabold text-lg text-zinc-950">
+        {/* <div className="uppercase font-extrabold text-lg text-zinc-950">
           TokenVault
-        </div>
+        </div> */}
       </div>
 
       {/* Center: Navigation */}
@@ -107,6 +111,7 @@ function Navbar() {
           🔌 Connect MetaMask
         </button>
       )}
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={true} />
     </div>
   );
 }

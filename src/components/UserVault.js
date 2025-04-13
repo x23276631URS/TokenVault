@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Contract, BrowserProvider, formatEther } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../contract";
 import useEthToEur from "../hooks/useEthToEur";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UserVault = ({ refreshSignal }) => {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -64,7 +66,8 @@ const UserVault = ({ refreshSignal }) => {
 
   const connectWallet = async () => {
     try {
-      if (!window.ethereum) return alert("Please install MetaMask.");
+      if (!window.ethereum) return toast.error("Please install MetaMask.");
+      // if (!window.ethereum) return alert("Please install MetaMask.");
       const provider = new BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
@@ -165,6 +168,7 @@ const UserVault = ({ refreshSignal }) => {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={true} />
     </div>
   );
 };
